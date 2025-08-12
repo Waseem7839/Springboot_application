@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools{
-        maven 'maven'
+        maven 'Maven'
     }
     environment {
         SONARQUBE_URL = 'https://d6312cd2eccd.ngrok-free.app/projects'
