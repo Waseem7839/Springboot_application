@@ -1,31 +1,37 @@
-node {
-    def mvnHome = tool name: 'Maven', type: 'hudson.tasks.Maven$MavenInstallation'
-
-    withEnv([
-        "SONARQUBE_URL=https://d6312cd2eccd.ngrok-free.app/"
-    ]) {
-        withCredentials([string(credentialsId: 'Sonarqubetoken', variable: 'SONARQUBE_TOKEN')]) {
-
-            stage('Checkout') {
+pipeline {
+    agent any
+    tools{
+        maven 'Maven'
+    }
+    environment {
+        SONARQUBE_URL = 'https://d6312cd2eccd.ngrok-free.app/projects'
+        SONARQUBE_TOKEN = credentials ('Sonarqubetoken')
+    }
+    stages {
+        stage('Checkout'){
+            steps{
                 git branch: 'main', credentialsId: 'Waseem_Jenkin', url: 'https://github.com/Waseem7839/Springboot_application.git'
                 sh 'ls -la'
             }
-
-            stage('Build') {
-                sh "${mvnHome}/bin/mvn clean install"
+        }
+        stage('Build'){
+            steps{
+                sh 'mvn clean install'
             }
-
-            stage('Package') {
-                sh "${mvnHome}/bin/mvn package"
+        }
+        stage('Package'){
+            steps{
+                sh 'mvn package'
             }
-
-            stage('SonarQube Analysis') {
-                sh """
-                ${mvnHome}/bin/mvn sonar:sonar \
+        }
+        stage('SonarQube Analysis'){
+            steps{
+                sh '''
+                mvn sonar:sonar \
                   -Dsonar.projectKey=springboot-demo \
-                  -Dsonar.host.url=https://d6312cd2eccd.ngrok-free.app/ \
+                  -Dsonar.host.url=https://d6312cd2eccd.ngrok-free.app \
                   -Dsonar.login=$SONARQUBE_TOKEN
-                """
+                '''
             }
         }
     }
