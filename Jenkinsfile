@@ -1,22 +1,23 @@
 pipeline {
     agent any
 
-    tools { 
-        maven 'maven' 
+    tools {
+        maven 'maven'
     }
 
     environment {
-        // Docker / K8s
         DOCKER_IMAGE       = "waseem951/nginx-docker"
-        DOCKER_CREDENTIALS = "docker"    // <-- set to your Jenkins creds ID for Docker Hub
+        DOCKER_CREDENTIALS = "docker"
+        AWS_CREDS          = "aws-eks-creds"
+        AWS_REGION         = "eu-west-2"
+        EKS_CLUSTER        = "team4-eks-cluster"  // Replace with your cluster name
         KUBE_NAMESPACE     = "team4-waseem-namespace"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/Waseem7839/Springboot_application.git'
+                git branch: 'main', url: 'https://github.com/Waseem7839/Springboot_application.git'
             }
         }
 
@@ -28,10 +29,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh """
-                  docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
-                  docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest
-                """
+                sh '''
+                    docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
+                    docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest
+                '''
             }
         }
 
@@ -42,28 +43,30 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh """
-                      echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
-                      docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}
-                      docker push ${DOCKER_IMAGE}:latest
-                    """
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                        docker push ${DOCKER_IMAGE}:latest
+                    '''
                 }
             }
         }
 
         stage('Deploy to EKS') {
             steps {
-                sh """
-                  # set your context or export KUBECONFIG before this step
-                  # Example (replace placeholders):
-                  # aws eks update-kubeconfig --region <region> --name <cluster-name>
-                  # or: kubectl config use-context arn:aws:eks:<region>:<account-id>:cluster/<cluster-name>
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                                  credentialsId: "${AWS_CREDS}"]]) {
+                    sh '''
+                        aws configure set default.region "$AWS_REGION"
+                        aws eks update-kubeconfig --region "$AWS_REGION" --name "$EKS_CLUSTER"
 
-                  kubectl apply -n ${KUBE_NAMESPACE} -f k8s/deployment.yaml
-                  kubectl apply -n ${KUBE_NAMESPACE} -f k8s/service.yaml
-                """
+                        kubectl get ns "$KUBE_NAMESPACE" >/dev/null 2>&1 || kubectl create ns "$KUBE_NAMESPACE"
+
+                        kubectl apply -n "$KUBE_NAMESPACE" -f k8s/deployment.yaml
+                        kubectl apply -n "$KUBE_NAMESPACE" -f k8s/service.yaml
+                    '''
+                }
             }
         }
     }
 }
-
