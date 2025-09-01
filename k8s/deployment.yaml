@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: springboot-app
-        image: waseem951/springboot-app:latest
+        image: waseem951/nginx-docker:latest
         ports:
         - containerPort: 8080
