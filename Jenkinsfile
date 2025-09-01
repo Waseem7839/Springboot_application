@@ -7,8 +7,8 @@ pipeline {
 
     environment {
         // Docker / K8s
-        DOCKER_IMAGE       = "waseem951/springboot_app"
-        DOCKER_CREDENTIALS = "veera-docker"    // <-- set to your Jenkins creds ID for Docker Hub
+        DOCKER_IMAGE       = "waseem951/nginx-docker"
+        DOCKER_CREDENTIALS = "docker"    // <-- set to your Jenkins creds ID for Docker Hub
         KUBE_NAMESPACE     = "team4-waseem-namespace"
     }
 
