@@ -8,7 +8,7 @@ pipeline {
     environment {
         DOCKER_IMAGE       = "waseem951/nginx-docker"
         DOCKER_CREDENTIALS = "waseem_docker"
-        AWS_CREDS          = "aws-eks-creds"
+        AWS_CREDS          = "aws-creds"
         AWS_REGION         = "eu-west-2"
         EKS_CLUSTER        = "devops-nation-cluster"  // Replace with your cluster name
         KUBE_NAMESPACE     = "team4-waseem-namespace"
