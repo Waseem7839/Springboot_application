@@ -12,7 +12,6 @@ pipeline {
         AWS_REGION         = "eu-west-2"
         EKS_CLUSTER        = "devops-nation-cluster"  // Replace with your cluster name
         KUBE_NAMESPACE     = "waseem-namespace"
-"
     }
 
     stages {
