@@ -8,10 +8,11 @@ pipeline {
     environment {
         DOCKER_IMAGE       = "waseem951/nginx-docker"
         DOCKER_CREDENTIALS = "waseem_docker"
-        AWS_CREDS          = "aws-creds"
+        AWS_CREDS          = "aws-cred"
         AWS_REGION         = "eu-west-2"
         EKS_CLUSTER        = "devops-nation-cluster"  // Replace with your cluster name
-        KUBE_NAMESPACE     = "team4-waseem-namespace"
+        KUBE_NAMESPACE     = "waseem_namespace
+"
     }
 
     stages {
@@ -31,7 +32,7 @@ pipeline {
             steps {
                 sh '''
                     docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
-                    docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest
+                    docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}
                 '''
             }
         }
