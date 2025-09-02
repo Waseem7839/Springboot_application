@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: springboot-app
-  namespace: waseem_namespace
+  namespace: waseem-namespace
 spec:
   replicas: 2
   selector:
