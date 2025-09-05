@@ -3,8 +3,8 @@ pipeline {
     environment {
         DOCKER_IMAGE = "waseem951/springboot_app"
         DOCKER_HUB_CREDS = "docker-preeti" 
-        KUBE_NAMESPACE = "springboot-app"
-        HELM_RELEASE = "springboot-release"
+        KUBE_NAMESPACE = "waseem-namespace"
+        HELM_RELEASE = "springboot-chart"
         HELM_CHART_PATH = "helm-chart"
     }
     tools {
