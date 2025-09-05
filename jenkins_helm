@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_IMAGE = "waseem951/springboot_app"
+        DOCKER_HUB_CREDS = "docker-preeti" 
+        KUBE_NAMESPACE = "springboot-app"
+        HELM_RELEASE = "springboot-release"
+        HELM_CHART_PATH = "helm-chart"
+    }
+    tools {
+        maven 'maven3'
+    }
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git credentialsId: 'git-preeti', url: 'https://github.com/Waseem7839/Springboot_application.git', branch: 'main'
+            }
+        }
+
+        stage('Build Spring Boot App') {
+            steps {
+                echo "Building Spring Boot application..."
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                echo "Building Docker Image..."
+                sh "docker build -t $DOCKER_IMAGE ."
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                echo "Pushing Docker Image to Docker Hub..."
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh "docker push $DOCKER_IMAGE"
+                }
+            }
+        }
+
+        stage('Deploy with Helm') {
+            steps {
+                withKubeConfig([credentialsId: 'kubeconfig-preeti']) {
+                    echo "Deploying application with Helm..."
+                    sh """
+                        helm upgrade --install ${HELM_RELEASE} ${HELM_CHART_PATH} \
+                          --namespace ${KUBE_NAMESPACE} \
+                          --set image.repository=preeti730/springboot-app \
+                          --set image.tag=1.0 \
+                          --create-namespace
+                    """
+                }
+            }
+        }
+    }
+}
